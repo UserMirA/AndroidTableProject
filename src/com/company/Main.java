@@ -8,6 +8,7 @@ public class Main {
         //Ввод переменных
         Scanner input = new Scanner(System.in);
 
+        //Ввод числа дней. Можно ввести неправильное значение несколько раз поэтому через while
         boolean f = false;
         int countOfDays = 0;
         while (!f) {
@@ -20,6 +21,7 @@ public class Main {
             }
         }
 
+        //Ввод начального дня
         f = false;
         int nameOfDay = 0;
         System.out.println("Выберите начальный день");
@@ -34,15 +36,16 @@ public class Main {
             }
         }
 
+        //Ввод бюджета
         f = false;
         double budget = 0;
         while (!f) {
             System.out.print("Введите бюджет на заданный период >>> ");
             budget = input.nextDouble();
-            if (budget>=0){
+            if (budget>0){
                 f = true;
             }else {
-                System.out.println("Бюджет должен быть больше или равен нулю. Повторите ввод:");
+                System.out.println("Бюджет должен быть больше нуля. Повторите ввод:");
             }
         }
 
@@ -61,7 +64,6 @@ public class Main {
     }
 }
 
-//Таблицы
 class Table{
     private double budget;
     private final int countOfDays;
@@ -71,9 +73,9 @@ class Table{
     private double[][] partsTable;
     private double[][] days;
     private static final String[] week = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-    private boolean exceed = true;
+    private boolean exceed = false;
 
-    //Конструкторы
+    //Конструкторы (Ввод переменных)
     public Table(double budget, int countOfDays, int startDay){
         this.budget = budget;
         this.countOfDays = countOfDays;
@@ -85,17 +87,21 @@ class Table{
         System.out.println("Срок = " + countOfDays + " дней");
         System.out.println("Частей = " + parts);
         System.out.println("Одна часть = " + onePart);
-        TableWriter.print(partsTable);
-        TableWriter.print(days);
+        tablePrint(partsTable);
+        tablePrint(days);
     }
 
-    //Создание дней
+    //Создание таблицы частей
     public void createDays(){
+        /*
+        Массив частей нужен для увеличения бюджета на определенные дни и для распределения
+        остатка между оставшимися днями
+         */
         this.partsTable = new double[countOfDays][2];
         for (int i=0; i < countOfDays; i++){
-            this.partsTable[i][0] = (i + this.startDay)%7;
-            if (this.partsTable[i][0] == 6 | this.partsTable[i][0] == 2) {
-                this.partsTable[i][1] = 1.5;
+            this.partsTable[i][0] = (i + this.startDay)%7; //Расчет дня недели
+            if (this.partsTable[i][0] == 6 | this.partsTable[i][0] == 2) {  // Специальные дни фиксированные - среда
+                this.partsTable[i][1] = 1.5; //На 50% больше обычного       // и воскресенье
             } else{
                 this.partsTable[i][1] = 1;
             }
@@ -105,13 +111,20 @@ class Table{
 
     //Расчет ежедневного бюджета
     public void countDayBudget(){
+        /*
+        Расчет бюджета на день происходит путем умножения "веса" одной части на коэфициент (количество частей)
+        каждого дня. Рассчет "веса" одной части тоже происходит здесь
+         */
+
+        //Нахождение общего количества частей
         this.days = new double[countOfDays][2];
         for (double[] x: partsTable){
             this.parts += x[1];
         }
 
-        this.onePart = this.budget / this.parts;
+        this.onePart = this.budget / this.parts; //Расчет одной части
 
+        //Расчет бюджета на каждый день
         for (int i=0; i < countOfDays; i++){
             this.days[i][0] = this.partsTable[i][0];
             this.days[i][1] = this.partsTable[i][1] * this.onePart;
@@ -119,10 +132,10 @@ class Table{
     }
     //Вывод готовой таблицы
     public void printTable(){
-        TableWriter.print(days);
+        tablePrint(days);
     }
 
-    //Вывод дня
+    //Изменение таблицы в зависимости от расходов
     public void countDays(){
         System.out.println("----------------------------------------------------");
         boolean f;
@@ -142,7 +155,7 @@ class Table{
             budget -= expenses;
             if (budget < 0) {
                 System.out.println("Вы превысили бюджет");
-                exceed = false;
+                exceed = true;
                 break;
             }
 
@@ -195,18 +208,19 @@ class Table{
             //Оформление
             System.out.println();
             System.out.println("----------------------------------------------------");
-            TableWriter.print(partsTable);
+            tablePrint(partsTable);
             System.out.println();
-            TableWriter.print(days);
+            tablePrint(days);
             System.out.println("----------------------------------------------------");
         }
 
         //Последний день
-        if (exceed) {
+        if (!exceed) {
             System.out.format("Сегодня %s. Это последний день. У вас осталось %.2f ", week[(days.length - 1) % 7], days[days.length - 1][1]);
         }
     }
 
+    //Оставить на завтра (1-й вариант)
     void leaveForTomorrow(int i, double variance){
         double buffer;
         buffer = days[i+1][1] + variance;
@@ -214,6 +228,7 @@ class Table{
         days[i+1][1] = buffer;
     }
 
+    //Оставить на воскресенье (2-й вариант, временное решение)
     void leaveForSunday(int i, double variance, int numberOfDay){
         double buffer;
         buffer = days[i + (6 - numberOfDay)][1] + variance;
@@ -221,6 +236,7 @@ class Table{
         days[i + (6 - numberOfDay)][1] = buffer;
     }
 
+    //Распределение между оставшимися днями (3-й вариант)
     void distributeBetweenAll(int i, double variance, int numberOfDay){
         parts = 0;
         for (int x = i+1; x < partsTable.length; x++){
@@ -234,12 +250,8 @@ class Table{
         }
     }
 
-}
-
-//Вывод таблицы
-class TableWriter{
-
-    static void print(double[][] table){
+    //Вывод в терминал (временное решение, можно сюда не смотреть)
+    void tablePrint(double[][] table){
 
         System.out.println("| Monday    | Tuesday   | Wednesday | Thursday  | Friday    | Saturday  | Sunday    |");
 
