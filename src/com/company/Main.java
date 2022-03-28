@@ -81,7 +81,7 @@ class Table{
         this.countOfDays = countOfDays;
         this.startDay = startDay;
     }
-
+    /*
     //Вывод всех переменных
     public void printAll(){
         System.out.println("Срок = " + countOfDays + " дней");
@@ -90,6 +90,7 @@ class Table{
         tablePrint(partsTable);
         tablePrint(days);
     }
+    */
 
     //Создание таблицы частей
     public void createDays(){
@@ -138,16 +139,20 @@ class Table{
     //Изменение таблицы в зависимости от расходов
     public void countDays(){
         System.out.println("----------------------------------------------------");
+
         boolean f;
         boolean f1;
         boolean f2;
         Scanner input = new Scanner(System.in);
+
         for (int i = 0; i < days.length-1;i++) {
             int numberOfDay = (int) days[i][0];
 
+            //Интерфейс
             System.out.format("Сегодня %s. Бюджет %.2f ", week[numberOfDay % 7], days[i][1]);
             System.out.println();
             System.out.print("Введите расход за сегодня >>> ");
+
             double expenses = input.nextDouble();
             System.out.println();
 
@@ -163,9 +168,13 @@ class Table{
             double variance = days[i][1] - expenses;
             System.out.format("Остаток %.2f. Как его распределить?\n", variance);
 
+            /*
+            У каждого варианта есть условия, которые должны быть удовлетворены для того чтобы вариант действий
+            был предложен пользователю
+             */
             //Условия для первого варианта
             f1 =false;
-            if (Math.abs(variance) <= days[i+1][1]){
+            if (Math.abs(variance) <= days[i+1][1]){ //Если расходы меньше бюджета на завтра
                 System.out.println("1 - оставить на завтра");
                 f1 = true;
             }
@@ -176,7 +185,7 @@ class Table{
                 if ((Math.abs(variance) <= days[i + (6 - numberOfDay)][1]) & (days[i][0] != 6)){
                     System.out.println("2 - оставить на воскресенье");
                     f2 = true;
-                } else if ((days.length-i-1) >= 7) {
+                } else if ((days.length-i-1) >= 7) {    //С одного воскресенья на следующее
                     if  (Math.abs(variance) <= days[i + 7][1]) {
                         System.out.println("2 - оставить на воскресенье");
                         f2 = true;
@@ -189,62 +198,67 @@ class Table{
             //Проверка введенного значения
             f = false;
             int variant = 0;
+
             while (!f) {
                 System.out.print(">>> ");
                 variant = input.nextInt();
                 if (((variant==1)&(f1))|((variant==2)&(f2))|(variant==3)){
-                    f = true;
+                    f = true; //Если введен корректный вариант цикл прерывается
                 }else {
                     System.out.println("Выберите один из предложенных вариантов");
                 }
             }
+
+            //Изменение таблицы согласно выбранному варианту действий
             switch (variant) {
                 case 1 -> this.leaveForTomorrow(i, variance);
                 case 2 -> this.leaveForSunday(i, variance, numberOfDay);
-                case 3 -> this.distributeBetweenAll(i, variance, numberOfDay);
+                case 3 -> this.distributeBetweenAll(i, variance);
             }
             days[i][1] = expenses;
 
             //Оформление
             System.out.println();
             System.out.println("----------------------------------------------------");
-            tablePrint(partsTable);
-            System.out.println();
+            // tablePrint(partsTable);
+            //System.out.println();
             tablePrint(days);
             System.out.println("----------------------------------------------------");
         }
 
         //Последний день
-        if (!exceed) {
+        if (!exceed) {  //Если не было превышения бюджета
             System.out.format("Сегодня %s. Это последний день. У вас осталось %.2f ", week[(days.length - 1) % 7], days[days.length - 1][1]);
         }
     }
 
     //Оставить на завтра (1-й вариант)
     void leaveForTomorrow(int i, double variance){
-        double buffer;
-        buffer = days[i+1][1] + variance;
-        partsTable[i+1][1] = buffer/onePart;
-        days[i+1][1] = buffer;
+        days[i+1][1] = days[i+1][1] + variance;
     }
 
     //Оставить на воскресенье (2-й вариант, временное решение)
     void leaveForSunday(int i, double variance, int numberOfDay){
-        double buffer;
-        buffer = days[i + (6 - numberOfDay)][1] + variance;
-        partsTable[i + (6 - numberOfDay)][1] = buffer/onePart;
-        days[i + (6 - numberOfDay)][1] = buffer;
+        days[i + (6 - numberOfDay)][1] = days[i + (6 - numberOfDay)][1] + variance;
+        partsTable[i + (6 - numberOfDay)][1] = days[i + (6 - numberOfDay)][1]/onePart;  //Изменение таблицы частей
     }
 
     //Распределение между оставшимися днями (3-й вариант)
-    void distributeBetweenAll(int i, double variance, int numberOfDay){
+    void distributeBetweenAll(int i, double variance){
+        /*
+        Чтобы рапределить остаток между всеми я нахожу остаток приходящийся на одну часть, вычисляю для каждого
+        дня и прибавляю к бюджету дня
+         */
+
+        //Нахождение количества частей всех дней, кроме уже прошедших
         parts = 0;
         for (int x = i+1; x < partsTable.length; x++){
             parts += partsTable[x][1];
         }
 
-        double partOfVariance = variance/parts;
+        double partOfVariance = variance/parts; //Вес одной части остатка
 
+        //Изменение бюджетов дней
         for (int x = i+1; x < days.length; x++){
             days[x][1] += partOfVariance * partsTable[x][1];
         }
