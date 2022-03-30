@@ -81,16 +81,6 @@ class Table{
         this.countOfDays = countOfDays;
         this.startDay = startDay;
     }
-    /*
-    //Вывод всех переменных
-    public void printAll(){
-        System.out.println("Срок = " + countOfDays + " дней");
-        System.out.println("Частей = " + parts);
-        System.out.println("Одна часть = " + onePart);
-        tablePrint(partsTable);
-        tablePrint(days);
-    }
-    */
 
     //Создание таблицы частей
     public void createDays(){
@@ -143,6 +133,7 @@ class Table{
         boolean f;
         boolean f1;
         boolean f2;
+        int selectedDay = 0;
         Scanner input = new Scanner(System.in);
 
         for (int i = 0; i < days.length-1;i++) {
@@ -172,26 +163,34 @@ class Table{
             У каждого варианта есть условия, которые должны быть удовлетворены для того чтобы вариант действий
             был предложен пользователю
              */
+
             //Условия для первого варианта
             f1 =false;
-            if (Math.abs(variance) <= days[i+1][1]){ //Если расходы меньше бюджета на завтра
+            if (-1*variance <= days[i+1][1]){ //Если расходы меньше бюджета на завтра
                 System.out.println("1 - оставить на завтра");
                 f1 = true;
             }
 
             //Условия для второго варианта
+            int [] possibleDays = new int[7];
             f2 = false;
-            if (days.length-i > 6 - days[i][0]) {
-                if ((Math.abs(variance) <= days[i + (6 - numberOfDay)][1]) & (days[i][0] != 6)){
-                    System.out.println("2 - оставить на воскресенье");
-                    f2 = true;
-                } else if ((days.length-i-1) >= 7) {    //С одного воскресенья на следующее
-                    if  (Math.abs(variance) <= days[i + 7][1]) {
-                        System.out.println("2 - оставить на воскресенье");
-                        f2 = true;
+            int k = 0;
+            for (int j = numberOfDay+1; j <= numberOfDay+7; j++){
+                if(j<startDay + countOfDays){ //если j не выходит за рамки массива days
+                    if (days[j-startDay][1] >= -1*variance){
+                        possibleDays[k] = j;
+                        k++;
                     }
                 }
             }
+
+            if (k != 0){
+                System.out.println("2 - перенести на другой день");
+                f2 = true;
+            }
+
+            int [] possibleDaysOut = new int[k];
+            System.arraycopy(possibleDays, 0, possibleDaysOut, 0, k);
 
             System.out.println("3 - распределить между всеми");
 
@@ -202,17 +201,47 @@ class Table{
             while (!f) {
                 System.out.print(">>> ");
                 variant = input.nextInt();
-                if (((variant==1)&(f1))|((variant==2)&(f2))|(variant==3)){
+                if (((variant==1)&(f1))|(variant==3)){
                     f = true; //Если введен корректный вариант цикл прерывается
+                }else if ((variant==2)&(f2)) {
+                    System.out.println("Возможные дни для переноса: ");
+                    int num = 1;
+                    for (int j: possibleDaysOut){
+                        System.out.format("%d - %s  ", num, week[j % 7]);
+                        num++;
+                    }
+                    System.out.println();
+
+                    System.out.print(">>> ");
+                    selectedDay = input.nextInt();
+
+                    if((selectedDay>k)|(selectedDay<=0)){
+                        System.out.println("Выбран некорректный день");
+                        System.out.println("Выберите один из предложенных вариантов");
+                        if(f1){
+                            System.out.println("1 - оставить на завтра");
+                        }
+                        System.out.println("2 - перенести на другой день");
+                        System.out.println("3 - распределить между всеми");
+                    }else {
+                        f = true;
+                    }
                 }else {
                     System.out.println("Выберите один из предложенных вариантов");
+                    if(f1){
+                        System.out.println("1 - оставить на завтра");
+                    }
+                    if(f2){
+                        System.out.println("2 - перенести на другой день");
+                    }
+                    System.out.println("3 - распределить между всеми");
                 }
             }
 
             //Изменение таблицы согласно выбранному варианту действий
             switch (variant) {
-                case 1 -> this.leaveForTomorrow(i, variance);
-                case 2 -> this.leaveForSunday(i, variance, numberOfDay);
+                case 1 -> this.putOffToTomorrow(i, variance);
+                case 2 -> this.putOffToSomeDay(variance, possibleDaysOut[selectedDay-1] );
                 case 3 -> this.distributeBetweenAll(i, variance);
             }
             days[i][1] = expenses;
@@ -220,27 +249,29 @@ class Table{
             //Оформление
             System.out.println();
             System.out.println("----------------------------------------------------");
-            // tablePrint(partsTable);
-            //System.out.println();
+            tablePrint(partsTable);
+            System.out.println();
             tablePrint(days);
             System.out.println("----------------------------------------------------");
         }
 
         //Последний день
         if (!exceed) {  //Если не было превышения бюджета
-            System.out.format("Сегодня %s. Это последний день. У вас осталось %.2f ", week[(days.length - 1) % 7], days[days.length - 1][1]);
+            System.out.format("Сегодня %s. Это последний день. У вас осталось %.2f ",
+                    week[(days.length - 1) % 7], days[days.length - 1][1]);
         }
     }
 
     //Оставить на завтра (1-й вариант)
-    void leaveForTomorrow(int i, double variance){
-        days[i+1][1] = days[i+1][1] + variance;
+    void putOffToTomorrow(int i, double variance){
+        days[i+1][1] += variance;
+        partsTable[i+1][1] = days[i+1][1]/onePart;
     }
 
-    //Оставить на воскресенье (2-й вариант, временное решение)
-    void leaveForSunday(int i, double variance, int numberOfDay){
-        days[i + (6 - numberOfDay)][1] = days[i + (6 - numberOfDay)][1] + variance;
-        partsTable[i + (6 - numberOfDay)][1] = days[i + (6 - numberOfDay)][1]/onePart;  //Изменение таблицы частей
+    //Оставить на воскресенье (2-й вариант)
+    void putOffToSomeDay(double variance, int selectedDay){
+        days[selectedDay-startDay][1] += variance;
+        partsTable[selectedDay-startDay][1] = days[selectedDay-startDay][1]/onePart;  //Изменение таблицы частей
     }
 
     //Распределение между оставшимися днями (3-й вариант)
@@ -264,7 +295,7 @@ class Table{
         }
     }
 
-    //Вывод в терминал (временное решение, можно сюда не смотреть)
+    //Вывод в терминал
     void tablePrint(double[][] table){
 
         System.out.println("| Monday    | Tuesday   | Wednesday | Thursday  | Friday    | Saturday  | Sunday    |");
