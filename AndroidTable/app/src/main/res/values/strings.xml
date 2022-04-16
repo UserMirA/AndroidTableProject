@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AndroidTable</string>
+    <string name="setNumberOfDays">Введите количество дней:</string>
+    <string name="zeros"> 000</string>
+    <string name="dayOfWeek">Введите начальный день:</string>
+    <string name="newTable">Создать таблицу</string>
+    <string name="sum">Введите сумму на заданный период</string>
+</resources>

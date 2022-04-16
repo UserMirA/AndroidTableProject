@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:orientation="vertical"
+    android:id='@+id/linearLayout'>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginStart="5dp"
+            android:text="@string/setNumberOfDays">
+
+        </TextView>
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/ed_countOfDays"
+            android:layout_marginStart="5dp"
+            android:textSize="14sp"
+            android:maxLength="3"
+            android:importantForAutofill="no"
+            android:inputType="number">
+
+        </EditText>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginStart="5dp"
+            android:text="@string/dayOfWeek">
+
+        </TextView>
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/ed_dayOfWeek"
+            android:layout_marginStart="5dp"
+            android:textSize="14sp"
+            android:maxLength="1"
+            android:importantForAutofill="no"
+            android:inputType="number">
+
+        </EditText>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:layout_marginStart="5dp"
+            android:text="@string/sum">
+
+        </TextView>
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/ed_sum"
+            android:layout_marginStart="5dp"
+            android:textSize="14sp"
+            android:maxLength="10"
+            android:importantForAutofill="no"
+            android:inputType="number">
+
+        </EditText>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/b_createTable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/newTable"
+        android:layout_marginBottom="25dp"
+        android:layout_marginStart="5dp">
+    </Button>
+
+</LinearLayout>

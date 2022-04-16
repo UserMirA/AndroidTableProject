@@ -268,7 +268,7 @@ class Table{
         partsTable[i+1][1] = days[i+1][1]/onePart;
     }
 
-    //Оставить на воскресенье (2-й вариант)
+    //Оставить на выранный день (2-й вариант)
     void putOffToSomeDay(double variance, int selectedDay){
         days[selectedDay-startDay][1] += variance;
         partsTable[selectedDay-startDay][1] = days[selectedDay-startDay][1]/onePart;  //Изменение таблицы частей
